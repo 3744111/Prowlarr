@@ -26,6 +26,7 @@ namespace NzbDrone.Core.Indexers
         Task<IndexerPageableQueryResult> Fetch(BookSearchCriteria searchCriteria);
         Task<IndexerPageableQueryResult> Fetch(BasicSearchCriteria searchCriteria);
 
+        Task PreDownload(string state);
         Task<byte[]> Download(Uri link);
         bool IsObsolete();
 

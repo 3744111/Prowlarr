@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.Globalization;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using FluentValidation;
 using Newtonsoft.Json;
 using NLog;
@@ -42,6 +43,29 @@ namespace NzbDrone.Core.Indexers.Definitions
         public override IParseIndexerResponse GetParser()
         {
             return new MyAnonamouseParser(Settings, Capabilities.Categories);
+        }
+
+        public async override Task PreDownload(string state)
+        {
+            if (Settings.Freeleech)
+            {
+                var timestamp = DateTimeOffset.Now.ToUnixTimeSeconds();
+                var freeleechUrl = Settings.BaseUrl + $"json/bonusBuy.php/{timestamp}";
+                var requestBuilder = new HttpRequestBuilder(freeleechUrl)
+                {
+                    LogResponseContent = true
+                };
+
+                var freeleechRequest = requestBuilder
+                    .AddQueryParam("spendtype", "personalFL")
+                    .AddQueryParam("torrentid", state)
+                    .AddQueryParam("timestamp", timestamp.ToString())
+                    .Build();
+
+                var indexerReq = new IndexerRequest(freeleechRequest);
+
+                await FetchIndexerResponse(indexerReq);
+            }
         }
 
         protected override IDictionary<string, string> GetCookies()
@@ -348,6 +372,7 @@ namespace NzbDrone.Core.Indexers.Definitions
                 release.Categories = _categories.MapTrackerCatToNewznab(category);
 
                 release.DownloadUrl = _settings.BaseUrl + "/tor/download.php?tid=" + id;
+                release.State = id.ToString();
                 release.InfoUrl = _settings.BaseUrl + "/t/" + id;
                 release.Guid = release.InfoUrl;
 
@@ -400,7 +425,10 @@ namespace NzbDrone.Core.Indexers.Definitions
         [FieldDefinition(3, Type = FieldType.Checkbox, Label = "Exclude VIP", HelpText = "Exclude VIP Torrents from search results")]
         public bool ExcludeVip { get; set; }
 
-        [FieldDefinition(4)]
+        [FieldDefinition(4, Type = FieldType.Checkbox, Label = "Freeleech", HelpText = "Use freeleech token for download")]
+        public bool Freeleech { get; set; }
+
+        [FieldDefinition(5)]
         public IndexerBaseSettings BaseSettings { get; set; } = new IndexerBaseSettings();
 
         public NzbDroneValidationResult Validate()

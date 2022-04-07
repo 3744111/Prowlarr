@@ -10,7 +10,7 @@ namespace NzbDrone.Core.Download
 {
     public interface IDownloadMappingService
     {
-        Uri ConvertToProxyLink(Uri link, string serverUrl, int indexerId, string file = "t");
+        Uri ConvertToProxyLink(Uri link, string serverUrl, int indexerId, string file = "t", string state = null);
         string ConvertToNormalLink(string link);
     }
 
@@ -25,7 +25,7 @@ namespace NzbDrone.Core.Download
             _configFileProvider = configFileProvider;
         }
 
-        public Uri ConvertToProxyLink(Uri link, string serverUrl, int indexerId, string file = "t")
+        public Uri ConvertToProxyLink(Uri link, string serverUrl, int indexerId, string file = "t", string state = null)
         {
             var urlBase = _configFileProvider.UrlBase;
 
@@ -38,6 +38,11 @@ namespace NzbDrone.Core.Download
             var encodedLink = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(encryptedLink));
             var urlEncodedFile = WebUtility.UrlEncode(file);
             var proxyLink = $"{serverUrl}{urlBase}/{indexerId}/download?apikey={_configFileProvider.ApiKey}&link={encodedLink}&file={urlEncodedFile}";
+            if (state.IsNotNullOrWhiteSpace())
+            {
+                proxyLink += $"&state={state}";
+            }
+
             return new Uri(proxyLink);
         }
 

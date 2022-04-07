@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using NzbDrone.Core.Indexers;
 using NzbDrone.Core.Languages;
 
@@ -52,6 +53,9 @@ namespace NzbDrone.Core.Parser.Model
         public ICollection<Language> Subs { get; set; }
         public ICollection<IndexerCategory> Categories { get; set; }
         public ICollection<IndexerFlag> IndexerFlags { get; set; }
+
+        [JsonIgnore]
+        public string State { get; set; }
 
         public int Age
         {

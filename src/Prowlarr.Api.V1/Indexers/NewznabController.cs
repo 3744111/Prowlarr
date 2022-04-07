@@ -164,7 +164,7 @@ namespace NzbDrone.Api.V1.Indexers
 
         [HttpGet("/api/v1/indexer/{id:int}/download")]
         [HttpGet("{id:int}/download")]
-        public async Task<object> GetDownload(int id, string link, string file)
+        public async Task<object> GetDownload(int id, string link, string file, string state = null)
         {
             var indexerDef = _indexerFactory.Get(id);
             var indexer = _indexerFactory.GetInstance(indexerDef);
@@ -190,6 +190,8 @@ namespace NzbDrone.Api.V1.Indexers
             var host = Request.GetHostName();
 
             var unprotectedlLink = _downloadMappingService.ConvertToNormalLink(link);
+
+            await indexer.PreDownload(state);
 
             // If Indexer is set to download via Redirect then just redirect to the link
             if (indexer.SupportsRedirect && indexerDef.Redirect)

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
 using FluentValidation.Results;
@@ -99,6 +100,11 @@ namespace NzbDrone.Core.Indexers
         public abstract Task<IndexerPageableQueryResult> Fetch(TvSearchCriteria searchCriteria);
         public abstract Task<IndexerPageableQueryResult> Fetch(BookSearchCriteria searchCriteria);
         public abstract Task<IndexerPageableQueryResult> Fetch(BasicSearchCriteria searchCriteria);
+        public virtual Task PreDownload(string state)
+        {
+            return Task.CompletedTask;
+        }
+
         public abstract Task<byte[]> Download(Uri link);
 
         public abstract IndexerCapabilities GetCapabilities();
